@@ -1,8 +1,8 @@
 GRAPH_UTILS = {
     graph6Encode : function ( A ) {
-        var v = xMatrix(A);
+        var v = A.length;
         var e = (v * (v-1))/2;
-        var nChars = (e - 1) / 6 + 2;
+        var nChars = Math.ceil((e - 1) / 6) + 1;
 
         var i = 0;
         var j = 0;
@@ -31,7 +31,7 @@ GRAPH_UTILS = {
     },
 
     graph6Decode : function ( s ) {
-        var n = s.charAt(0) - 63;
+        var n = s.charCodeAt(0) - 63;
         var e = n * (n - 1) / 2;
 
         var toAddSize = 6;
@@ -43,7 +43,7 @@ GRAPH_UTILS = {
         var x = 1;
         var y = 0;
         while (count < e){
-            var c = s.charAt(index) - 63;
+            var c = s.charCodeAt(index) - 63;
             var toAdd = new Array(toAddSize);
             var i;
             for(i = toAddSize-1; i >= 0; i--){
@@ -73,6 +73,9 @@ GRAPH_UTILS = {
         var arr = new Array(d1), i, l;
         for(i = 0, l = d2; i < l; i++) {
             arr[i] = new Array(d1);
+            for (var j = 0; j < d1; j++){
+                arr[i][j] = 0;
+            }
         }
         return arr;
     }
