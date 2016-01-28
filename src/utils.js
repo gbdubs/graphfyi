@@ -1,4 +1,5 @@
 GRAPH_UTILS = {
+
     graph6Encode : function ( A ) {
         var v = A.length;
         var e = (v * (v-1))/2;
@@ -126,7 +127,7 @@ MATRIX_UTILS = {
         var d2 = MATRIX_UTILS.d2;
 
         if (d2(A) != d1(B)){
-            throw new Error('What the hell! You gave me a ['+d1(A)+'x'+d2(A)+'] to multiply by ['+d1(B)+'x'+d2(B)+']!!');
+            throw new Error('What the hell! You gave me a ['+d1(A)+'x'+d2(A)+'] to multiply by ['+d1(B)+'x'+d2(B)+']!');
         }
 
         var C = MATRIX_UTILS.zeros(d1(A), d2(B));
@@ -171,3 +172,60 @@ MATRIX_UTILS = {
         return A;
     }
 };
+
+GRAPH_INVARIANTS = {
+
+    degrees : function ( G ) {
+
+        var d = new Array(G.length);
+
+        for(var i = 0; i < G.length; i++){
+            var temp = 0;
+            for(var j = 0; j < G[i].length; j++){
+                temp += G[i][j];
+            }
+            d[i] = temp;
+        }
+
+        d.sort(function(a,b){return a - b});
+
+        return d;
+    },
+
+    diameter : function ( G ) {
+
+        // PASS
+
+    },
+
+    eigenvalues : function ( G ) {
+
+        // PASS
+
+    },
+
+    paths : function ( G ) {
+
+        // PASS
+
+    },
+
+    angleMatrix : function ( G ) {
+
+        // PASS
+
+    }
+};
+
+STRING_UTILS = {
+    hashCode : function(str) {
+        var hash = 0, i, chr, len;
+        if (str.length === 0) return hash;
+        for (i = 0, len = str.length; i < len; i++) {
+            chr   = str.charCodeAt(i);
+            hash  = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+    }
+}
