@@ -126,7 +126,7 @@ MATRIX_UTILS = {
         var d2 = MATRIX_UTILS.d2;
 
         if (d2(A) != d1(B)){
-            throw 'What the hell! You gave me a ['+d1(A)+'x'+d2(A)+'] to multiply by ['+d1(B)+'x'+d2(B)+']!!';
+            throw new Error('What the hell! You gave me a ['+d1(A)+'x'+d2(A)+'] to multiply by ['+d1(B)+'x'+d2(B)+']!!');
         }
 
         var C = MATRIX_UTILS.zeros(d1(A), d2(B));
@@ -141,5 +141,33 @@ MATRIX_UTILS = {
         }
 
         return C;
+    },
+
+    transpose : function ( A ) {
+        var d1 = MATRIX_UTILS.d1(A);
+        var d2 = MATRIX_UTILS.d2(A);
+
+        var B = MATRIX_UTILS.zeros(d2, d1);
+
+        for (var i = 0; i < d1; i++){
+            for (var j = 0; j < d2; j++) {
+                B[j][i] = A[i][j];
+            }
+        }
+
+        return B;
+    },
+
+    random : function (d1, d2, max) {
+        if (max == undefined){
+            max = 1;
+        }
+        var A = MATRIX_UTILS.zeros(d1, d2);
+        for (var i = 0; i < d1; i++){
+            for (var j = 0; j < d2; j++){
+                A[i][j] = Math.random() * max;
+            }
+        }
+        return A;
     }
 };
