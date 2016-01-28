@@ -78,5 +78,24 @@ GRAPH_UTILS = {
             }
         }
         return arr;
+    },
+
+    randomGraph : function ( v, e ){
+        if (e == undefined){
+            e = Math.ceil(Math.random() * v * (v - 1) / 2);
+        }
+        var A = GRAPH_UTILS.makeArray(v, v);
+        while (e > 0){
+            var i = 1;
+            var j = 0;
+            while (A[i][j] == 1 || i == j){
+                i = Math.floor( Math.random() * v);
+                j = Math.floor( Math.random() * v);
+            }
+            A[i][j] = 1;
+            A[j][i] = 1;
+            e--;
+        }
+        return A;
     }
 };
