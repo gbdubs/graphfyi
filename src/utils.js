@@ -36,7 +36,7 @@ GRAPH_UTILS = {
 
         var toAddSize = 6;
 
-        var graph = GRAPH_UTILS.makeArray(n, n);
+        var graph = MATRIX_UTILS.zeros(n, n);
 
         var count = 0;
         var index = 1;
@@ -69,22 +69,11 @@ GRAPH_UTILS = {
         return graph;
     },
 
-    makeArray : function(d1, d2) {
-        var arr = new Array(d1), i, l;
-        for(i = 0, l = d2; i < l; i++) {
-            arr[i] = new Array(d1);
-            for (var j = 0; j < d1; j++){
-                arr[i][j] = 0;
-            }
-        }
-        return arr;
-    },
-
     randomGraph : function ( v, e ){
         if (e == undefined){
             e = Math.ceil(Math.random() * v * (v - 1) / 2);
         }
-        var A = GRAPH_UTILS.makeArray(v, v);
+        var A = MATRIX_UTILS.zeros(v, v);
         while (e > 0){
             var i = 1;
             var j = 0;
@@ -97,5 +86,60 @@ GRAPH_UTILS = {
             e--;
         }
         return A;
+    }
+};
+
+MATRIX_UTILS = {
+
+    d1 : function ( A ){
+        return A.length;
+    },
+
+    d2 : function ( A ){
+        if (A.length == 0){
+            return 0;
+        }
+        return A[0].length;
+    },
+
+    zeros : function(d1, d2) {
+        var arr = new Array(d1), i, l;
+        for(i = 0; i < d1; i++) {
+            arr[i] = new Array(d2);
+            for (var j = 0; j < d2; j++){
+                arr[i][j] = 0;
+            }
+        }
+        return arr;
+    },
+
+    identity : function (d1){
+        var A = zeros(d1, d1);
+        for (var i = 0; i < d1; i++){
+            A[i][i] = 1;
+        }
+        return A;
+    },
+
+    multiply : function ( A, B ) {
+        var d1 = MATRIX_UTILS.d1;
+        var d2 = MATRIX_UTILS.d2;
+
+        if (d2(A) != d1(B)){
+            throw 'What the hell! You gave me a ['+d1(A)+'x'+d2(A)+'] to multiply by ['+d1(B)+'x'+d2(B)+']!!';
+        }
+
+        var C = MATRIX_UTILS.zeros(d1(A), d2(B));
+        for (var i = 0; i < d1(A); i++){
+            for (var j = 0; j < d2(B); j++) {
+                var total = 0;
+                for (var k = 0; k < d2(A); k++){
+                    total += A[i][k] * B[k][j];
+                }
+                C[i][j] = total;
+            }
+        }
+
+        return C;
     }
 };
