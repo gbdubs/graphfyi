@@ -9,26 +9,53 @@ EXECUTIVE = {
     FUNCTIONS : {},
 
     running : false,
+    nProblemsAssigned : 0,
+    maxProblems : 10,
 
-    execute : function (){
-        this.running = true;
+    run : function () {
         while (this.running){
-            var problem = this.getProblem();
-            var result = this.calculate(problem.functionId, problem.graph6String);
-            this.sendResponse(problem.url, problem.functionId, problem.graph6String, result);
+            if (nProblemsAssigned < maxProblems){
+                this.execute();
+            }
         }
     },
 
-    getProblem : function (){
-        return {
-            url: this.SOLVED_URL,
-            graph6String: '902384s',
-            functionId: '203984'
-        }
+    stop : function () {
+        this.running = false;
     },
 
-    sendResponse : function(url, functionId, graphString, result){
+    execute : function () {
+        this.nProblemsAssigned++;
+        var executor = this;
+        this.getProblem(function (data) {
+            var result = executor.calculate(data.functionId, data.graph6String);
+            executor.sendResponse(data.url,
+            {
+                'functionId': data.functionId,
+                'graph6String': data.graph6String,
+                'result': result
+            }, function () {
+                executor.nProblemsAssigned--;
+            });
+        });
+    },
 
+    getProblem : function (callback){
+        callback({
+            'url': this.SOLVED_URL,
+            'graph6String': '902384s',
+            'functionId': '203984'
+        });
+    },
+
+    sendResponse : function(url, data, callback){
+        $.post(url,
+            data,
+            function(data, status){
+                console.log("Data: " + data + "\nStatus: " + status);
+                callback();
+            }
+        );
     },
 
     calculate : function(functionId, graphString){
