@@ -18,6 +18,13 @@ EXECUTIVE = {
         else
             return 'http://www.graph.fyi/solved'
     },
+
+    FUNCTION_URL : function () {
+        if (this.LOCAL_MODE)
+            return 'http://localhost:3000/function';
+        else
+            return 'http://www.graph.fyi/function'
+    }
     
     FUNCTIONS : {},
 
@@ -48,16 +55,23 @@ EXECUTIVE = {
         console.log("Starting New Problem. ["+this.nProblemsAssigned+"] currently running.");
         this.nProblemsAssigned++;
         var executor = this;
+
         this.getProblem(function (data) {
-            var result = executor.calculate(data.functionId, data.graph6String);
-            executor.sendResponse(data.url,
-            {
-                'functionId': data.functionId,
-                'graph6String': data.graph6String,
-                'result': result
-            }, function () {
-                executor.nProblemsAssigned--;
-            });
+            executor.calculate(data.functionId, data.graph6String, function (result) {
+                if (result || result === 0){
+                    executor.sendResponse(
+                        data.url,
+                        {
+                            'functionId': data.functionId,
+                            'graph6String': data.graph6String,
+                            'result': result
+                        }, 
+                        function () {
+                            executor.nProblemsAssigned--;
+                        }
+                    );
+                }
+            });   
         });
     },
 
@@ -85,10 +99,13 @@ EXECUTIVE = {
         );
     },
 
-    calculate : function(functionId, graphString){
-        var fun = this.getFunction(functionId);
+    calculate : function(functionId, graphString, callback){
         var graph = GRAPH_UTILS.graph6Decode(graphString);
-        return fun(graph);
+        this.getFunction(functionId, function (fun){
+            if (fun){
+                callback(fun(graph));
+            }
+        });
     },
 
     getFunction : function(functionId) {
@@ -96,24 +113,23 @@ EXECUTIVE = {
             var functionBody = this.downloadFunction(functionId);
             // TODO : var checksum = this.downloadChecksum(functionId);
             // TODO : this.verifyFunctionWithChecksum(functionBody, checksum);
+            if (!functionBody){
+                console.log("Function with function id ["+functionId+"] could not be retrieved by the server.");
+                return null;
+            }
             this.unpackFunction(functionId, functionBody);
         }
         return this.FUNCTIONS[functionId];
     },
 
-    downloadFunction : function(functionId){
-        return 'function( A ) {\n'+
-        '   var size = A.length;\n'+
-        '   var result = [];\n'+
-        '   for (var temp = 0; temp < A.length; temp++){\n'+
-        '       var total = 0;\n'+
-        '       for (var temp2 = 0; temp2 < A[temp].length; temp2++){\n'+
-        '           total = total + A[temp][temp2];\n'+
-        '       }\n'+
-        '       result.push(total);\n'+
-        '   }\n'+
-        '   return result;\n'+
-        '}';
+    downloadFunction : function(functionId, callback){
+        $.get(
+            EXECUTIVE.FUNCTION_URL(),
+            {"functionId" : functionId},
+            function (data, status){
+                callback(data);
+            }
+        );
     },
 
     downloadChecksum : function(functionId){
