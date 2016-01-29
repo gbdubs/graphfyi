@@ -9,6 +9,7 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var problem = require('./routes/problem');
 var solved = require('./routes/solved');
+var functionroute = require('./routes/function');
 
 var app = express();
 
@@ -25,13 +26,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/run', function(req, res) {
-    res.sendfile('runner.html', {root: __dirname })
+    res.sendFile('runner.html', {root: __dirname })
 });
 
 app.use('/', routes);
 app.use('/users', users);
 app.use('/problem', problem);
 app.use('/solved', solved);
+app.use('/function', functionroute);
 
 
 // catch 404 and forward to error handler

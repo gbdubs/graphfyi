@@ -24,7 +24,7 @@ EXECUTIVE = {
             return 'http://localhost:3000/function';
         else
             return 'http://www.graph.fyi/function'
-    }
+    },
     
     FUNCTIONS : {},
 
@@ -93,7 +93,7 @@ EXECUTIVE = {
             url,
             data,
             function(data, status){
-                console.log("Send Response Data: " + data + "\nStatus: " + status);
+                console.log("Send Response Data Returned: " + data + "\nStatus: " + status);
                 callback();
             }
         );
@@ -108,18 +108,21 @@ EXECUTIVE = {
         });
     },
 
-    getFunction : function(functionId) {
+    getFunction : function(functionId, callback) {
         if (this.FUNCTIONS[functionId] == undefined){
-            var functionBody = this.downloadFunction(functionId);
+            var functionBody = this.downloadFunction(functionId, function (functionResponse){
+                var functionBody = functionResponse.body;
+                if (!functionBody){
+                    console.log("Function with function id ["+functionId+"] could not be retrieved by the server.");
+                    return null;
+                }
+                EXECUTIVE.unpackFunction(functionId, functionBody);
+                callback(EXECUTIVE.FUNCTIONS[functionId]);
+            });
             // TODO : var checksum = this.downloadChecksum(functionId);
             // TODO : this.verifyFunctionWithChecksum(functionBody, checksum);
-            if (!functionBody){
-                console.log("Function with function id ["+functionId+"] could not be retrieved by the server.");
-                return null;
-            }
-            this.unpackFunction(functionId, functionBody);
         }
-        return this.FUNCTIONS[functionId];
+        callback(this.FUNCTIONS[functionId]);
     },
 
     downloadFunction : function(functionId, callback){
@@ -127,11 +130,11 @@ EXECUTIVE = {
             EXECUTIVE.FUNCTION_URL(),
             {"functionId" : functionId},
             function (data, status){
-                callback(data);
+                callback(JSON.parse(data));
             }
         );
     },
-
+/*
     downloadChecksum : function(functionId){
         return STRING_UTILS.hashCode(functionId);
     },
@@ -140,7 +143,7 @@ EXECUTIVE = {
         if (STRING_UTILS.hashCode(functionBody) != checksumValue){
             throw new Error("UNTRUSTED CODE DETECTED!!! ["+functionBody+"] does not match checksum ["+checksumValue+"]");
         }
-    },
+    },*/
 
     unpackFunction : function (functionId, functionBody){
         this.FUNCTIONS[functionId] = eval("var TEMPFUN = function(){ return "+functionBody+"; }; TEMPFUN();");

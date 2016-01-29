@@ -103,8 +103,8 @@ var graphs = [
 router.get('/', function(req, res, next) {
   res.send(JSON.stringify({
   	'graph6String': graphs[index++],
-  	'url': '/solution',
-  	'functionId': 'nEdges'
+  	'url': '/solved',
+  	'functionId': 'degrees'
   }));
 });
 

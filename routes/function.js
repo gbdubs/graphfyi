@@ -6,9 +6,10 @@ var index = 0;
 var results = {};
 
 router.get('/', function(req, res, next) {
-  var functionId = req.body.functionId;
-  
-  if (functionId == 'degrees'){
+
+  	var functionId = req.query.functionId;
+  	console.log("FUNCITONID REQUESTED " + functionId);
+  	if (functionId == 'degrees'){
 	  res.send(JSON.stringify({
 	  	  'found': true,
 		  'functionId': functionId,
@@ -26,7 +27,7 @@ router.get('/', function(req, res, next) {
 			'd.sort(function(a,b){return a - b});\n'+
 			'return d;\n'+
     	  '}'
-	  });
+	  })
 	);
   } else {
   	res.send(JSON.stringify({'found': false}));
