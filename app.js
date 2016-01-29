@@ -5,8 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
 var problem = require('./routes/problem');
 var solved = require('./routes/solved');
 var functionroute = require('./routes/function');
@@ -29,12 +27,9 @@ app.get('/run', function(req, res) {
     res.sendFile('runner.html', {root: __dirname })
 });
 
-app.use('/', routes);
-app.use('/users', users);
 app.use('/problem', problem);
 app.use('/solved', solved);
 app.use('/function', functionroute);
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

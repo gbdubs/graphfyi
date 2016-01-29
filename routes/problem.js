@@ -1,7 +1,17 @@
 var express = require('express');
 var router = express.Router();
 
+/* GET problem definition. */
+router.get('/', function(req, res, next) {
+	res.send(JSON.stringify({
+		'graph6String': graphs[index++],
+		'url': '/solved',
+		'functionId': 'degrees'
+	}));
+});
+
 var index = 0;
+
 var graphs = [
 	'K??FFB_F?wB_',
 	'K??FEb_F?wD_',
@@ -98,14 +108,5 @@ var graphs = [
 	'K?`CPaIPR_E_',
 	'KCOcaOccaQCc'
 ];
-
-/* GET problem definition. */
-router.get('/', function(req, res, next) {
-  res.send(JSON.stringify({
-  	'graph6String': graphs[index++],
-  	'url': '/solved',
-  	'functionId': 'degrees'
-  }));
-});
 
 module.exports = router;

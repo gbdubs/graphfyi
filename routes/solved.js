@@ -3,24 +3,28 @@ var router = express.Router();
 
 var index = 0;
 
-var results = {};
+var results = [];
 
 router.post('/', function(req, res, next) {
 
-  var graph = req.body.graph6String;
-  var functionId = req.body.functionId;
-  var result = req.body['result[]'];
+	var graph6String = req.body.graph6String;
+	var functionId = req.body.functionId;
+	var result = req.body['result[]'];
 
-  console.log("GRAPH : " + graph);
-  console.log("RESULT : " + result);
-  
-  results[graph] = result;
-  console.log(JSON.stringify(results, null, 2));
-  
-  res.send(JSON.stringify({
-  	'success': true,
-  	'saved': true
-  }));
+	saveResult(functionId, graph6String, result);
+	
+	res.send(JSON.stringify({
+		'saved': true
+	}));
 });
+
+// Placeholder for a DB... for now...
+function saveResult(functionId, graph6String, result){
+	results.push({
+		'functionId': functionId,
+		'graph6String': graph6String,
+		'result': result
+	});
+}
 
 module.exports = router;
