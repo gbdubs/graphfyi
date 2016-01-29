@@ -3,149 +3,169 @@
  */
 
 EXECUTIVE = {
-    LOCAL_MODE : true,
+	LOCAL_MODE : true,
 
-    REQUEST_URL : function () {
-        if (this.LOCAL_MODE)
-            return 'http://localhost:3000/problem';
-        else 
-            return 'http://www.graph.fyi/problem';
-    },
+	FUNCTIONS : {},
 
-    SOLVED_URL : function () {
-        if (this.LOCAL_MODE)
-            return 'http://localhost:3000/solved';
-        else
-            return 'http://www.graph.fyi/solved'
-    },
+	running : false,
+	nProblemsAssigned : 0,
+	maxProblems : 2,
 
-    FUNCTION_URL : function () {
-        if (this.LOCAL_MODE)
-            return 'http://localhost:3000/function';
-        else
-            return 'http://www.graph.fyi/function'
-    },
-    
-    FUNCTIONS : {},
+	start : function () {
+		this.running = true;
+		var ex = this;
+		console.log("STATUS : Started Execution");
+		var interval = setInterval(function (){
+			if (!ex.running){
+				clearInterval(interval);
+			}
+			if (ex.nProblemsAssigned < ex.maxProblems){
+				ex.execute();
+			}
+		}, 1000);
+	},
 
-    running : false,
-    nProblemsAssigned : 0,
-    maxProblems : 2,
+	stop : function () {
+		console.log("STATUS : Halted Execution");
+		this.running = false;
+	},
 
-    start : function () {
-        this.running = true;
-        var ex = this;
-        console.log("Started Execution");
-        var interval = setInterval(function (){
-            if (!ex.running){
-                clearInterval(interval);
-            }
-            if (ex.nProblemsAssigned < ex.maxProblems){
-                ex.execute();
-            }
-        }, 1000);
-    },
+	execute : function () {
+		console.log("Starting New Problem. ["+this.nProblemsAssigned+"] currently running.");
+		this.nProblemsAssigned++;
+		var executor = this;
 
-    stop : function () {
-        console.log("Halted Execution");
-        this.running = false;
-    },
+		// Get a problem definition to wrangle with.
+		this.getProblem(function (data) {
+			// Once you have a problem, you should calculate over that problem.
+			executor.calculate(data.functionId, data.graph6String, function (result) {
+				// Once you have a result, you should send it to the server.
+				if (result || result === 0){
+					executor.sendResponse(
+						data.url,
+						{
+							'functionId': data.functionId,
+							'graph6String': data.graph6String,
+							'result': result
+						}, 
+						// Once you have sent it to the server, you should indicate that
+						// you are now free to do more work.
+						function () {
+							executor.nProblemsAssigned--;
+						}
+					);
+				}
+			});   
+		});
+	},
 
-    execute : function () {
-        console.log("Starting New Problem. ["+this.nProblemsAssigned+"] currently running.");
-        this.nProblemsAssigned++;
-        var executor = this;
+	getProblem : function (callback){
+		var url = this.REQUEST_URL();
+		console.log("Requesting Problem From Url ["+url+"]");
+		$.get(
+			url,
+			{},
+			function(data, status){
+				if (status == 'success'){
+					callback(JSON.parse(data));
+				} else {
+					console.log("ERR : The problem definition could not be retrieved.");
+				}
+			}
+		);
+	},
 
-        this.getProblem(function (data) {
-            executor.calculate(data.functionId, data.graph6String, function (result) {
-                if (result || result === 0){
-                    executor.sendResponse(
-                        data.url,
-                        {
-                            'functionId': data.functionId,
-                            'graph6String': data.graph6String,
-                            'result': result
-                        }, 
-                        function () {
-                            executor.nProblemsAssigned--;
-                        }
-                    );
-                }
-            });   
-        });
-    },
+	sendResponse : function(url, data, callback){
+		$.post(
+			url,
+			data,
+			function(data, status){
+				if (status == 'success'){
+					callback();
+				} else {
+					console.log("ERR : The result of the calculation was not sent to the server.");
+				}
+			}
+		);
+	},
 
-    getProblem : function (callback){
-        var url = this.REQUEST_URL();
-        console.log("Requesting Problem From Url ["+url+"]");
-        $.get(
-            url,
-            {},
-            function(data, status){
-                console.log("Get Problem Data: " + data + "\nStatus: " + status);
-                callback(JSON.parse(data));
-            }
-        );
-    },
+	calculate : function(functionId, graphString, callback){
+		var graph = GRAPH_UTILS.graph6Decode(graphString);
+		this.getFunction(functionId, function (fun){
+			if (fun){
+				var result = fun(graph);
+				if (!result && result !== 0){
+					console.log("ERR : The calculation did not recieve a valid result.")
+				} else {
+					callback(result);
+				}
+			}
+		});
+	},
 
-    sendResponse : function(url, data, callback){
-        $.post(
-            url,
-            data,
-            function(data, status){
-                console.log("Send Response Data Returned: " + data + "\nStatus: " + status);
-                callback();
-            }
-        );
-    },
+	getFunction : function(functionId, callback) {
+		if (this.FUNCTIONS[functionId] == undefined){
+			var functionBody = this.downloadFunction(functionId, function (functionResponse){
+				var functionBody = functionResponse.body;
+				if (!functionBody){
+					console.log("ERR : Function with functionId ["+functionId+"] was not found on the server.");
+					return;
+				}
+				EXECUTIVE.unpackFunction(functionId, functionBody);
+				callback(EXECUTIVE.FUNCTIONS[functionId]);
+			});
+		}
+		callback(this.FUNCTIONS[functionId]);
+	},
 
-    calculate : function(functionId, graphString, callback){
-        var graph = GRAPH_UTILS.graph6Decode(graphString);
-        this.getFunction(functionId, function (fun){
-            if (fun){
-                callback(fun(graph));
-            }
-        });
-    },
+	downloadFunction : function(functionId, callback){
+		$.get(
+			EXECUTIVE.FUNCTION_URL(),
+			{"functionId" : functionId},
+			function (data, status){
+				if (status == 'success'){
+					callback(JSON.parse(data));
+				} else {
+					console.log("ERR : Function with id ["+functionId+"] could not be downloaded.")
+				}
+			}
+		);
+	},
 
-    getFunction : function(functionId, callback) {
-        if (this.FUNCTIONS[functionId] == undefined){
-            var functionBody = this.downloadFunction(functionId, function (functionResponse){
-                var functionBody = functionResponse.body;
-                if (!functionBody){
-                    console.log("Function with function id ["+functionId+"] could not be retrieved by the server.");
-                    return null;
-                }
-                EXECUTIVE.unpackFunction(functionId, functionBody);
-                callback(EXECUTIVE.FUNCTIONS[functionId]);
-            });
-            // TODO : var checksum = this.downloadChecksum(functionId);
-            // TODO : this.verifyFunctionWithChecksum(functionBody, checksum);
-        }
-        callback(this.FUNCTIONS[functionId]);
-    },
+	unpackFunction : function (functionId, functionBody){
+		this.FUNCTIONS[functionId] = eval(""+
+		"   var TEMPFUN = function(){\n"+
+		"		return function ( A ) {\n"+
+		"			try {\n"+
+		"				var userFn = "+functionBody+";\n"+
+		"				return userFn(A);\n"+
+		"			} catch(err) {\n"+
+		"				console.log('ERR : Function with Id ["+functionId+"] produced an error.');\n"+
+		"			}\n"+
+		"		}\n"+
+		"	};\n"+
+		"	TEMPFUN();\n"
+		);
+	},
 
-    downloadFunction : function(functionId, callback){
-        $.get(
-            EXECUTIVE.FUNCTION_URL(),
-            {"functionId" : functionId},
-            function (data, status){
-                callback(JSON.parse(data));
-            }
-        );
-    },
-/*
-    downloadChecksum : function(functionId){
-        return STRING_UTILS.hashCode(functionId);
-    },
+	REQUEST_URL : function () {
+		if (this.LOCAL_MODE)
+			return 'http://localhost:3000/problem';
+		else 
+			return 'http://www.graph.fyi/problem';
+	},
 
-    verifyFunctionWithChecksum : function(functionBody, checksumValue){
-        if (STRING_UTILS.hashCode(functionBody) != checksumValue){
-            throw new Error("UNTRUSTED CODE DETECTED!!! ["+functionBody+"] does not match checksum ["+checksumValue+"]");
-        }
-    },*/
+	SOLVED_URL : function () {
+		if (this.LOCAL_MODE)
+			return 'http://localhost:3000/solved';
+		else
+			return 'http://www.graph.fyi/solved'
+	},
 
-    unpackFunction : function (functionId, functionBody){
-        this.FUNCTIONS[functionId] = eval("var TEMPFUN = function(){ return "+functionBody+"; }; TEMPFUN();");
-    }
+	FUNCTION_URL : function () {
+		if (this.LOCAL_MODE)
+			return 'http://localhost:3000/function';
+		else
+			return 'http://www.graph.fyi/function'
+	}
 };
