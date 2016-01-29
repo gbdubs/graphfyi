@@ -3,8 +3,21 @@
  */
 
 EXECUTIVE = {
-    REQUEST_URL : 'http://www.graph.fyi/problem',
-    SOLVED_URL : 'http://www.graph.fyi/solved',
+    LOCAL_MODE : true,
+
+    REQUEST_URL : function () {
+        if (LOCAL_MODE)
+            return 'localhost:3000/problem';
+        else 
+            return 'http://www.graph.fyi/problem';
+    },
+
+    SOLVED_URL : function () {
+        if (LOCAL_MODE)
+            return 'localhost:3000/solved';
+        else
+            return 'http://www.graph.fyi/solved'
+    },
     
     FUNCTIONS : {},
 
