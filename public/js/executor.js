@@ -6,15 +6,15 @@ EXECUTIVE = {
     LOCAL_MODE : true,
 
     REQUEST_URL : function () {
-        if (LOCAL_MODE)
-            return 'localhost:3000/problem';
+        if (this.LOCAL_MODE)
+            return 'http://localhost:3000/problem';
         else 
             return 'http://www.graph.fyi/problem';
     },
 
     SOLVED_URL : function () {
-        if (LOCAL_MODE)
-            return 'localhost:3000/solved';
+        if (this.LOCAL_MODE)
+            return 'http://localhost:3000/solved';
         else
             return 'http://www.graph.fyi/solved'
     },
@@ -23,21 +23,29 @@ EXECUTIVE = {
 
     running : false,
     nProblemsAssigned : 0,
-    maxProblems : 10,
+    maxProblems : 2,
 
-    run : function () {
-        while (this.running){
-            if (nProblemsAssigned < maxProblems){
-                this.execute();
+    start : function () {
+        this.running = true;
+        var ex = this;
+        console.log("Started Execution");
+        var interval = setInterval(function (){
+            if (!ex.running){
+                clearInterval(interval);
             }
-        }
+            if (ex.nProblemsAssigned < ex.maxProblems){
+                ex.execute();
+            }
+        }, 1000);
     },
 
     stop : function () {
+        console.log("Halted Execution");
         this.running = false;
     },
 
     execute : function () {
+        console.log("Starting New Problem. ["+this.nProblemsAssigned+"] currently running.");
         this.nProblemsAssigned++;
         var executor = this;
         this.getProblem(function (data) {
@@ -54,18 +62,24 @@ EXECUTIVE = {
     },
 
     getProblem : function (callback){
-        callback({
-            'url': this.SOLVED_URL,
-            'graph6String': '902384s',
-            'functionId': '203984'
-        });
+        var url = this.REQUEST_URL();
+        console.log("Requesting Problem From Url ["+url+"]");
+        $.get(
+            url,
+            {},
+            function(data, status){
+                console.log("Get Problem Data: " + data + "\nStatus: " + status);
+                callback(JSON.parse(data));
+            }
+        );
     },
 
     sendResponse : function(url, data, callback){
-        $.post(url,
+        $.post(
+            url,
             data,
             function(data, status){
-                console.log("Data: " + data + "\nStatus: " + status);
+                console.log("Send Response Data: " + data + "\nStatus: " + status);
                 callback();
             }
         );
@@ -80,15 +94,26 @@ EXECUTIVE = {
     getFunction : function(functionId) {
         if (this.FUNCTIONS[functionId] == undefined){
             var functionBody = this.downloadFunction(functionId);
-            var checksum = this.downloadChecksum(functionId);
-            this.verifyFunctionWithChecksum(functionBody, checksum);
+            // TODO : var checksum = this.downloadChecksum(functionId);
+            // TODO : this.verifyFunctionWithChecksum(functionBody, checksum);
             this.unpackFunction(functionId, functionBody);
         }
         return this.FUNCTIONS[functionId];
     },
 
     downloadFunction : function(functionId){
-        return 'function(a, b) { console.log('+functionId+'); return a + b; }'
+        return 'function( A ) {\n'+
+        '   var size = A.length;\n'+
+        '   var result = [];\n'+
+        '   for (var temp = 0; temp < A.length; temp++){\n'+
+        '       var total = 0;\n'+
+        '       for (var temp2 = 0; temp2 < A[temp].length; temp2++){\n'+
+        '           total = total + A[temp][temp2];\n'+
+        '       }\n'+
+        '       result.push(total);\n'+
+        '   }\n'+
+        '   return result;\n'+
+        '}';
     },
 
     downloadChecksum : function(functionId){
@@ -102,6 +127,6 @@ EXECUTIVE = {
     },
 
     unpackFunction : function (functionId, functionBody){
-        this.FUNCTIONS[functionId] = eval("var TEMPFUN = function(){ return "+functionBody+"; } TEMPFUN();");
+        this.FUNCTIONS[functionId] = eval("var TEMPFUN = function(){ return "+functionBody+"; }; TEMPFUN();");
     }
 };
