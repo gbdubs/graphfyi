@@ -3,6 +3,7 @@
  */
 
 AUTOMORPHISM_UTILS = {
+    /* NOT YET VALIDATED
     findAllAutomorphisms : function ( G ) {
         var v = G.length;
 
@@ -143,6 +144,69 @@ AUTOMORPHISM_UTILS = {
         generateAutomorphismGiven(QECA, QECB, AUTOM);
 
         return allAutomorphisms;
+    },
+    */
+
+    createAllPossibleCannonicalPermutationsFromEquivalenceClasses : function (qec) {
+
+        function rangeList(start, end){
+            var result = [];
+            for (var i = start; i < end; i++){
+                result.push(i);
+            }
+            return result;
+        }
+
+
+        function createAllPermsForSet(s1, s2, result){
+            if (s1.length === 1){
+                result[s1[0]] = s2[0];
+                return [result];
+            }
+            var allResults = [];
+            var a = s1[0];
+            s1.splice(0,1);
+            for (var i = 0; i < s2.length; i++){
+                var clonedResult = JSON.parse(JSON.stringify(result));
+                clonedResult[a] = s2[i];
+                var clonedS2 = JSON.parse(JSON.stringify(s2));
+                clonedS2.splice(i, 1);
+                var clonedS1 = JSON.parse(JSON.stringify(s1));
+                var aResult = createAllPermsForSet(clonedS1, clonedS2, clonedResult);
+                allResults = aResult.concat(allResults);
+            }
+            return allResults;
+        }
+
+        var qecPerms = [];
+
+        var index = 0;
+        for (var i = 0; i < qec.length; i++){
+            var s1 = qec[i];
+            var s2 = rangeList(index, index + s1.length);
+            index += s1.length;
+            qecPerms.push(createAllPermsForSet(s1, s2, {}));
+        }
+
+        var allPerms = [{}];
+
+        while (qecPerms.length > 0){
+            var qecPerm = qecPerms[0];
+            qecPerms.splice(0,1);
+
+            var newAllPerms = [];
+            for (i = 0; i < allPerms.length; i++){
+                for (var j = 0; j < qecPerm.length; j++){
+                    var temp = JSON.parse(JSON.stringify(allPerms[i]));
+                    for (var attr in qecPerm[j]) { temp[attr] = qecPerm[j][attr]; }
+                    newAllPerms.push(temp)
+                }
+            }
+
+            allPerms = newAllPerms;
+        }
+        
+        return allPerms;
     },
 
     findQuaziEquivalenceClasses : function ( G ){

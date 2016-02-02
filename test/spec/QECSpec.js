@@ -40,3 +40,31 @@ describe("QEC Generator", function () {
 
     });
 });
+
+
+describe("Cannonical Permutation Generator", function () {
+
+    it("should be able to calcualte the correct number of permutations given the qecs 1", function (){
+        var expectedEncoding = 'I?r@`aiXg';
+
+        var graph = GRAPH_UTILS.graph6Decode(expectedEncoding);
+
+        var qec = AUTOMORPHISM_UTILS.findQuaziEquivalenceClasses(graph);
+
+        var perms = AUTOMORPHISM_UTILS.createAllPossibleCannonicalPermutationsFromEquivalenceClasses(qec);
+
+        expect(perms.length).toEqual(2 * 24 * 2 * 2);
+    });
+
+    it("should be able to calcualte the correct number of permutations given the qecs 2", function (){
+        var expectedEncoding = 'ICpbdh]n?';
+
+        var graph = GRAPH_UTILS.graph6Decode(expectedEncoding);
+
+        var qec = AUTOMORPHISM_UTILS.findQuaziEquivalenceClasses(graph);
+
+        var perms = AUTOMORPHISM_UTILS.createAllPossibleCannonicalPermutationsFromEquivalenceClasses(qec);
+
+        expect(perms.length).toEqual(1);
+    });
+});
