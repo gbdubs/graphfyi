@@ -68,3 +68,17 @@ describe("Cannonical Permutation Generator", function () {
         expect(perms.length).toEqual(1);
     });
 });
+
+describe("Cannonical Graph Converter", function () {
+    it(" works 1", function (){
+        var originalEncoding = 'I?r@`aiXg';
+        var cannonicalEncoding = GRAPH_UTILS.graph6Encode(GRAPH_UTILS.graphToCannonicalForm(GRAPH_UTILS.graph6Decode(originalEncoding)));
+        expect('I`G[ACrBw').toEqual(cannonicalEncoding);
+    });
+
+    it(" is stable 1", function (){
+        var originalEncoding = 'I`G[ACrBw';
+        var cannonicalEncoding = GRAPH_UTILS.graph6Encode(GRAPH_UTILS.graphToCannonicalForm(GRAPH_UTILS.graph6Decode(originalEncoding)));
+        expect(originalEncoding).toEqual(cannonicalEncoding);
+    });
+});

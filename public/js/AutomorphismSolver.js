@@ -205,7 +205,7 @@ AUTOMORPHISM_UTILS = {
 
             allPerms = newAllPerms;
         }
-        
+
         return allPerms;
     },
 

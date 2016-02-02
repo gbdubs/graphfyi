@@ -91,12 +91,13 @@ GRAPH_UTILS = {
 
     graphToCannonicalForm : function ( A ) {
 
-        var allAutomorphisms = AUTOMORPHISM_UTILS.findAllAutomorphisms( A );
+        var qec = AUTOMORPHISM_UTILS.findQuaziEquivalenceClasses(A);
+        var allPermutations = AUTOMORPHISM_UTILS.createAllPossibleCannonicalPermutationsFromEquivalenceClasses(qec);
 
         var best = A;
 
-        for (var am = 0; am < allAutomorphisms.length; am++){
-            var B = MATRIX_UTILS.permute(A, allAutomorphisms[am]);
+        for (var am = 0; am < allPermutations.length; am++){
+            var B = MATRIX_UTILS.permute(A, allPermutations[am]);
             if (MATRIX_UTILS.compare(best, B) === -1){
                 best = B;
             }
