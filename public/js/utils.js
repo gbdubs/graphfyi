@@ -87,6 +87,22 @@ GRAPH_UTILS = {
             e--;
         }
         return A;
+    },
+
+    graphToCannonicalForm : function ( A ) {
+
+        var allAutomorphisms = AUTOMORPHISM_UTILS.findAllAutomorphisms( A );
+
+        var best = A;
+
+        for (var am = 0; am < allAutomorphisms.length; am++){
+            var B = MATRIX_UTILS.permute(A, allAutomorphisms[am]);
+            if (MATRIX_UTILS.compare(best, B) === -1){
+                best = B;
+            }
+        }
+
+        return best;
     }
 };
 
@@ -170,7 +186,60 @@ MATRIX_UTILS = {
             }
         }
         return A;
+    },
+
+    duplicate : function ( A ) {
+        var B = MATRIX_UTILS.zeros(A.length, A.length);
+        for (var i = 0; i < A.length; i++){
+            for (var j = 0; j < A.length; j++){
+                B[i][j] = A[i][j];
+            }
+        }
+        return B;
+    },
+
+    permute : function ( A , permutation ) {
+        var v = A.length;
+
+        var B = MATRIX_UTILS.zeros(v, v);
+
+        for (var key in permutation){
+            var result = permutation[key];
+            B[key][result] = 1;
+        }
+
+        var primeB = MATRIX_UTILS.transpose(B);
+
+        return MATRIX_UTILS.multiply(primeB, MATRIX_UTILS.multiply(A, B));
+    },
+
+    compare : function ( A , B ){
+        if (A.length > B.length){
+            return 1;
+        } else if (B.length > A.length){
+            return -1;
+        }
+
+        if (A[0].length > B[0].length){
+            return 1;
+        } else if (B[0].length > A[0].length){
+            return -1;
+        }
+
+
+        for (var i = 0; i < A.length; i++){
+            for (var j = 0; j < A[0].length; j++){
+                if (A[i][j] > B[i][j]){
+                    return 1;
+                } else if (B[i][j] > A[i][j]) {
+                    return -1;
+                }
+            }
+        }
+
+        return 0;
     }
+
 };
 
 GRAPH_INVARIANTS = {
@@ -206,8 +275,22 @@ GRAPH_INVARIANTS = {
 
     paths : function ( G ) {
 
-        // PASS
+        var v = G.length;
 
+        var result = MATRIX_UTILS.zeros(v, v);
+
+        var index = 0;
+        var running = MATRIX_UTILS.duplicate(G);
+
+        while (index < v){
+            running = MATRIX_UTILS.multiply(running, G);
+            for (var i = 0; i < v; i++){
+                result[index][i] = running[i][i];
+            }
+            index++;
+        }
+
+        return MATRIX_UTILS.transpose(result);
     },
 
     angleMatrix : function ( G ) {
