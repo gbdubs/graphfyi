@@ -94,9 +94,9 @@ GRAPH_UTILS = {
         var qec = AUTOMORPHISM_UTILS.findQuaziEquivalenceClasses(A);
         var allPermutations = AUTOMORPHISM_UTILS.createAllPossibleCannonicalPermutationsFromEquivalenceClasses(qec);
 
-        var best = A;
+        var best = MATRIX_UTILS.permute(A, allPermutations[0]);
 
-        for (var am = 0; am < allPermutations.length; am++){
+        for (var am = 1; am < allPermutations.length; am++){
             var B = MATRIX_UTILS.permute(A, allPermutations[am]);
             if (MATRIX_UTILS.compare(best, B) === -1){
                 best = B;
@@ -104,6 +104,12 @@ GRAPH_UTILS = {
         }
 
         return best;
+    },
+
+    graphEncodingToCannonicalForm : function ( s ){
+        var A = this.graph6Decode(s);
+        var B = this.graphToCannonicalForm(A);
+        return this.graph6Encode(B);
     }
 };
 
@@ -239,6 +245,39 @@ MATRIX_UTILS = {
         }
 
         return 0;
+    },
+
+    randomPermutation : function ( size ){
+
+        var permutation = {};
+
+        var set1 = new Array(size);
+        var set2 = new Array(size);
+
+        for (var i = 0; i < size; i++){
+            set1[i] = i;
+            set2[i] = i;
+        }
+
+        while (set1.length > 0){
+            var index = Math.floor(Math.random() * set2.length);
+            permutation[set1[0]] = set2[index];
+            set1.splice(0, 1);
+            set2.splice(index, 1);
+        }
+
+        return permutation;
+    },
+
+    toString : function ( A ) {
+        var result = "";
+        for (var i = 0; i < A.length; i++){
+            for (var j = 0; j < A.length - 1; j++){
+                result = result + A[i][j] + ", ";
+            }
+            result += A[i][j] + "\n";
+        }
+        return result;
     }
 
 };
