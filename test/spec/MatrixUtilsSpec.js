@@ -50,7 +50,7 @@ describe("Matrix Utilities", function () {
     it("should validate for all possible dimension mismatches", function() {
         var d1 = 10;
         var d2 = 20;
-        var d3 = 1
+        var d3 = 1;
 
         var A = MATRIX_UTILS.random(d2, d1);
         var B = MATRIX_UTILS.random(d2, d3);
@@ -70,5 +70,4 @@ describe("Matrix Utilities", function () {
         expect(function(){MATRIX_UTILS.multiply(B, A)}).toThrowError(Error);
         expect(function(){MATRIX_UTILS.multiply(A, B)}).not.toThrowError(Error);
     });
-
 });
